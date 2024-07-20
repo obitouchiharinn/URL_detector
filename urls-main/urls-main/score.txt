@@ -1,0 +1,17 @@
+Accuracy: 0.9375071983046553
+              precision    recall  f1-score   support
+
+      benign       0.95      0.97      0.96     85778
+  defacement       0.97      0.99      0.98     19104
+     malware       0.98      0.93      0.96      6521
+    phishing       0.81      0.75      0.78     18836
+
+    accuracy                           0.94    130239
+   macro avg       0.93      0.91      0.92    130239
+weighted avg       0.94      0.94      0.94    130239
+
+Confusion Matrix:
+[[82971    21     6  2780]
+ [   38 18844    43   179]
+ [   47    87  6088   299]
+ [ 4058   526    55 14197]]

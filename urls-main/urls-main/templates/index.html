@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label, input {
+            margin-bottom: 10px;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .view-entries-button {
+            margin-top: 10px;
+            background-color: #28a745;
+        }
+        .view-entries-button:hover {
+            background-color: #218838;
+        }
+        .result-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: box-shadow 0.3s ease;
+        }
+        .result-container:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        .result-container p {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .result-container button {
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            margin: 10px;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .result-container button:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .result-container .wrong {
+            background-color: #dc3545;
+        }
+        .result-container .wrong:hover {
+            background-color: #c82333;
+        }
+        .chart-container {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="logout-button">
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    <div class="container">
+        <h2>URL Prediction</h2>
+        <form action="{{ url_for('predict') }}" method="POST">
+            <label for="url">Enter URL:</label>
+            <input type="text" id="url" name="url" required>
+            <button type="submit">Predict</button>
+        </form>
+        <button class="view-entries-button" onclick="window.location.href='/view_data'">View Previous Entries</button>
+        {% if prediction %}
+            <h3>Prediction: {{ prediction }}</h3>
+            <ul>
+                {% for category, probability in class_probabilities %}
+                    <li>{{ category }}: {{ probability*100|round(2) }}%</li>
+                {% endfor %}
+            </ul>
+            <div class="chart-container">
+                <canvas id="predictionChart"></canvas>
+            </div>
+        {% endif %}
+        <div class="result-container">
+            <button onclick="giveFeedback(true)">Correct Prediction</button>
+            <button class="wrong" onclick="giveFeedback(false)">Wrong Prediction</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function giveFeedback(isCorrect) {
+            if (isCorrect) {
+                alert('Thank you for your feedback!');
+            } else {
+                alert('Sorry for the incorrect prediction. We will improve our system.');
+            }
+        }
+        {% if class_probabilities %}
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            const chartData = {
+                labels: [
+                    {% for category, probability in class_probabilities %}
+                        '{{ category }}',
+                    {% endfor %}
+                ],
+                datasets: [{
+                    label: 'Prediction Probabilities',
+                    data: [
+                        {% for category, probability in class_probabilities %}
+                            {{ probability }},
+                        {% endfor %}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            const predictionChart = new Chart(ctx, {
+                type: 'pie',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Prediction Probabilities'
+                        }
+                    }
+                },
+            });
+        {% endif %}
+    </script>
+</body>
+</html>
